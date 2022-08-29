@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+
+<body>
+    <div id="app">
+        <v-app>
+            <v-app-bar app color="primary" dark>
+                <v-app-bar-title>Kalkulator Patungan</v-app-bar-title>
+            </v-app-bar>
+            <v-main>
+                <v-container fluid>
+                    <!-- <router-view></router-view> -->
+                    <!-- <v-row>
+                        <v-col>
+                            <v-btn elevation="2" color="primary" @click="addMember()">+ Member</v-btn>
+                        </v-col>
+                    </v-row> -->
+
+                    <v-card v-for="(member, member_index) in members" elevation="2" outlined elevation="2" outlined tile class="p4 mt-2">
+                        <v-card-title class="pb-0 d-flex justify-space-between">
+                            <v-text-field class="mr-8" label="Member Name" :value="member.name" @input="updateMemberName($event, member_index)"></v-text-field>
+                            <!-- <div> -->
+                                <!-- <v-btn outlined color="indigo" small @click="addItemToMember(member_index)">
+                                    add item
+                                </v-btn> -->
+                                <v-btn icon color="red" @click="deleteMember(member_index)">
+                                    <v-icon>delete</v-icon>
+                                </v-btn>
+                            <!-- </div> -->
+                        </v-card-title>
+                        <v-card-text class="pb-0">
+                            <template v-for="(item, item_index) in member.items">
+                                <v-row class="d-flex align-center mt-0">
+                                    <v-col cols="10" class="pt-0">
+                                        <div class="my-0 text-subtitle-1 black--text">
+                                            <v-text-field label="Product Name" :value="item.name" @input="updateItemProps($event, member_index, item_index, 'name')"></v-text-field>
+                                        </div>
+                                        <v-row>
+                                            <v-col cols="5">
+                                                <v-text-field prefix="Rp" label="Price" :value="item.price" @input="updateItemProps($event, member_index, item_index, 'price')"></v-text-field>
+                                            </v-col>
+                                            <v-col cols="2">
+                                                <v-text-field label="Qty" :value="item.qty" @input="updateItemProps($event, member_index, item_index, 'qty')"></v-text-field>
+                                            </v-col>
+                                            <v-col cols="5">
+                                                <v-text-field prefix="Rp" label="Subtotal" readonly :value="item.price * item.qty"></v-text-field>
+                                            </v-col>
+                                            </v-row>
+                                        <!-- <v-divider v-if="item_index < member.items.length - 1"></v-divider> -->
+                                    </v-col>
+                                    <v-col cols="2" class="pt-0">
+                                        <v-btn icon color="red" @click="deleteItemFromMember(member_index, item_index)">
+                                            <v-icon>highlight_off</v-icon>
+                                        </v-btn>
+                                    </v-col>
+                                </v-row>
+                            </template>
+                        </v-card-text>
+                        <!-- <v-divider v-if="item_index < member.items.length - 1"></v-divider> -->
+                        <v-card-text class="pt-0">
+                            <v-btn outlined color="indigo" small @click="addItemToMember(member_index)">
+                                add item
+                            </v-btn>
+                            <!-- <v-row>
+                                <v-col cols="7 offset-1">
+                                    <div class="my-0 text-subtitle-2 black--text">
+                                        Total yang harus dibayar
+                                    </div>
+                                </v-col>
+                                <v-col cols="4">
+                                    <div class="my-0 text-subtitle-2 text-right black--text">
+                                        {{toIDR(getPaymentPerUser(member))}}
+                                    </div>
+                                </v-col>
+                            </v-row> -->
+                        </v-card-text>
+                    </v-card>
+
+                    <v-card v-for="(member, member_index) in members" elevation="2" outlined tile class="p4 mt-2">
+                        <v-card-title class="pb-1 d-flex justify-space-between">
+                            <div>{{member.name}}</div>
+                            <v-btn icon color="indigo" small>
+                                <v-icon small>edit</v-icon>
+                            </v-btn>
+                        </v-card-title>
+                        <v-card-text>
+                            <template v-for="(item, item_index) in member.items">
+                                <div class="my-2">
+                                    <div class="my-0 text-subtitle-1 black--text">
+                                        {{item.name}}
+                                    </div>
+                                    <v-row>
+                                        <v-col cols="7">
+                                            <div class="my-0 text-subtitle-2">
+                                                {{toIDR(item.price)}} x {{item.qty}}
+                                            </div>
+                                        </v-col>
+                                        <v-col cols="5">
+                                            <div class="my-0 text-subtitle-2 text-right">
+                                                {{toIDR(item.price * item.qty)}}
+                                            </div>
+                                        </v-col>
+                                    </v-row>
+                                </div>
+                                <v-divider v-if="item_index < member.items.length - 1"></v-divider>
+                            </template>
+                            <v-row>
+                                <v-col cols="7">
+                                    <div class="my-0 text-subtitle-2 black--text">
+                                        Total yang harus dibayar
+                                    </div>
+                                </v-col>
+                                <v-col cols="5">
+                                    <div class="my-0 text-subtitle-2 text-right black--text">
+                                        {{toIDR(getPaymentPerUser(member))}}
+                                    </div>
+                                </v-col>
+                            </v-row>
+                        </v-card-text>
+                    </v-card>
+
+                    <!-- <v-row class="my-1">
+                        <v-col class="d-flex justify-space-between">
+                            <v-btn elevation="2" color="primary">+ Biaya tambahan</v-btn>
+                            <v-btn elevation="2" color="primary">+ Diskon</v-btn>
+                        </v-col>
+                    </v-row> -->
+                    <v-card elevation="2" outlined tile class="p4 mt-2 mb-12">
+                        <v-card-text class="mb-2 mt-0 pt-0">
+                            <v-row class="my-0">
+                                <v-col class="d-flex justify-space-between">
+                                    <v-btn outlined color="error" small @click="costForm.isOpen = !costForm.isOpen">+ Biaya tambahan</v-btn>
+                                    <v-btn outlined color="green" small :disabled="discount.active" @click="discountForm = !discountForm">+ Diskon</v-btn>
+                                </v-col>
+                            </v-row>
+                            <v-divider></v-divider>
+                            <v-row class="mt-2">
+                                <v-col cols="7" class="py-1 text-right">
+                                    Total Harga :
+                                </v-col>
+                                <v-col cols="5" class="py-1 text-right">
+                                    {{toIDR(getTotalPrice())}}
+                                </v-col>
+                            </v-row>
+                            <template v-for="(additional_cost, cost_index) in additional_costs">
+                                <v-row>
+                                    <v-col cols="7" class="py-1 text-right red--text d-flex justify-end align-center">
+                                        <v-btn icon color="red" small @click="deleteCost(cost_index)">
+                                            <v-icon small>highlight_off</v-icon>
+                                        </v-btn>
+                                        {{additional_cost.name}} :
+                                    </v-col>
+                                    <v-col cols="5" class="py-1 text-right red--text">
+                                        {{toIDR(additional_cost.value)}}
+                                    </v-col>
+                                </v-row>
+                            </template>
+                            <v-row v-if="discount.active">
+                                <v-col cols="7" class="py-1 text-right green--text d-flex justify-end align-center">
+                                    <v-btn icon color="green" small @click="deleteDiscount()">
+                                        <v-icon small>highlight_off</v-icon>
+                                    </v-btn>
+                                    Diskon :
+                                </v-col>
+                                <v-col cols="5" class="py-1 text-right green--text">
+                                    {{toIDR(getDiscount() * -1)}}
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="7" class="py-1 text-right text--primary font-weight-bold">
+                                    Total Bayar :
+                                </v-col>
+                                <v-col cols="5" class="py-1 text-right text--primary font-weight-bold">
+                                    {{toIDR(getTotalPayment())}}
+                                </v-col>
+                            </v-row>
+                        </v-card-text>
+                        <!-- <v-card-actions class="d-flex justify-end">
+                            <v-btn
+                              color="deep-purple lighten-2"
+                              text
+                            >
+                              View Result
+                            </v-btn>
+                            <v-btn
+                              color="deep-purple lighten-2"
+                              text
+                            >
+                              Share
+                            </v-btn>
+                          </v-card-actions> -->
+                    </v-card>
+                  
+                    <v-bottom-sheet v-model="costForm.isOpen">
+                        <v-sheet
+                          class="text-center"
+                          height="150px"
+                        >
+                          <div class="py-3 pt-6 px-4">
+                            <v-row>
+                                <v-col>
+                                    <v-text-field label="Nama Biaya" v-model="costForm.label"></v-text-field>
+                                </v-col>
+                                <v-col>
+                                    <v-text-field prefix="Rp" label="Nominal" v-model="costForm.nominal"></v-text-field>
+                                </v-col>
+                            </v-row>
+                          </div>
+                          <v-btn
+                            class="mb-4"
+                            text
+                            color="green"
+                            @click="addCost()"
+                          >
+                            Tambah Biaya
+                          </v-btn>
+                        </v-sheet>
+                    </v-bottom-sheet>
+
+                    <v-bottom-sheet v-model="discountForm">
+                        <v-sheet
+                          class="text-center"
+                          height="150px"
+                        >
+                          <div class="py-3 pt-6 px-4">
+                            <v-row>
+                                <v-col>
+                                    <v-select
+                                    :items="discountTypes"
+                                    label="Type"
+                                    v-model="discount.type"
+                                    ></v-select>
+
+                                </v-col>
+                                <v-col>
+                                    <v-text-field v-if="discount.type == 'nominal'" prefix="Rp" label="Nominal" v-model="discount.nominal"></v-text-field>
+                                    <v-text-field v-if="discount.type == 'percentage'" suffix="%" label="Percentage" @input="percentageDiscount($event)"></v-text-field>
+                                </v-col>
+                            </v-row>
+                          </div>
+                          <v-btn
+                            class="mb-4"
+                            text
+                            color="green"
+                            @click="saveDiscount()"
+                          >
+                            Tambah Diskon
+                          </v-btn>
+                        </v-sheet>
+                    </v-bottom-sheet>
+
+                    <v-fab-transition>
+                        <v-btn
+                          color="primary"
+                          fab
+                          dark
+                          bottom
+                          right
+                          fixed
+                          @click="addMember()"
+                        >
+                            <v-icon>add</v-icon>
+                        </v-btn>
+                    </v-fab-transition>
+                </v-container>
+            </v-main>
+        </v-app>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-router@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            vuetify: new Vuetify({
+                icons: {
+                    iconfont: 'mdi', // default),
+                }
+            }),
+            data: () => ({
+                discountForm: false,
+                discountTypes: ['nominal', 'percentage'],
+                costForm: {
+                    isOpen: false,
+                    label: '',
+                    nominal: 0,
+                },
+                members: [
+                    // {
+                    //     name: 'Agus',
+                    //     items: [
+                    //         {
+                    //             name: 'Kopi Susu',
+                    //             qty: 1,
+                    //             price: 20000
+                    //         },
+                    //     ]
+                    // },
+                ],
+                discount: {
+                    active: false,
+                    type: 'nominal',
+                    percentage: 0.1,
+                    nominal: 74000
+                    // nominal: 1000
+                },
+                additional_costs: [
+                    // {
+                    //     name: 'Ongkir',
+                    //     value: 4500
+                    // },
+                    // {
+                    //     name: 'Biaya Layanan',
+                    //     value: 4000
+                    // }
+                ],
+                valid: false,
+                firstname: '',
+                lastname: '',
+                nameRules: [
+                    v => !!v || 'Name is required',
+                    v => v.length <= 10 || 'Name must be less than 10 characters',
+                ],
+                email: '',
+                emailRules: [
+                    v => !!v || 'E-mail is required',
+                    v => /.+@.+/.test(v) || 'E-mail must be valid',
+                ],
+            }),
+            methods: {
+                toIDR(value) {
+                    return Intl.NumberFormat('id', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        maximumFractionDigits: 0,
+                        minimumFractionDigits: 0
+                    }).format(value)
+                },
+                getTotalPrice() {
+                    let total = 0;
+                    for (member of this.members) {
+                        for (item of member.items) {
+                            total += (item.price * item.qty)
+                        }
+                    }
+                    return total
+                },
+                getDiscount() {
+                    if (this.discount.type == 'nominal') {
+                        this.discount.percentage = this.discount.nominal / this.getTotalPrice()
+                    } else {
+                        this.discount.nominal = this.discount.percentage * this.getTotalPrice()
+                    }
+                    return this.discount.nominal
+                },
+                getTotalAdditionalCost() {
+                    let total_additional_cost = 0
+                    for (additional_cost of this.additional_costs) {
+                        total_additional_cost += additional_cost.value
+                    }
+                    return total_additional_cost
+                },
+                getTotalPayment() {
+                    return this.getTotalPrice() + this.getTotalAdditionalCost() - this.getDiscount()
+                },
+                getPercentageDiscountPerMember() {
+                    let percentageDiscount = this.getDiscount() / this.getTotalPrice()
+                    return percentageDiscount
+                },
+                getPaymentPerUser(member) {
+                    let totalPrice = 0
+                    for (item of member.items) {
+                        totalPrice += (item.price * item.qty)
+                    }
+                    return totalPrice + (this.getTotalAdditionalCost()/this.members.length) - (totalPrice * this.getPercentageDiscountPerMember())
+                },
+                cekData() {
+                    console.log(this.members)
+                },
+                updateMemberName(val, memberIndex) {
+                    this.members[memberIndex].name = val
+                },
+                updateItemProps(val, memberIndex, itemIndex, obj) {
+                    this.members[memberIndex].items[itemIndex][obj] = val
+                },
+                addMember() {
+                    this.members.push({
+                        name: '',
+                        items: [
+
+                        ]
+                    })
+                },
+                deleteMember(index) {
+                    this.members.splice(index, 1)
+                },
+                addItemToMember(index) {
+                    this.members[index].items.push({
+                        name: '',
+                        qty: 0,
+                        price: 0
+                    })
+                },
+                deleteItemFromMember(memberIndex, itemIndex) {
+                    this.members[memberIndex].items.splice(itemIndex, 1)
+                },
+                saveDiscount() {
+                    this.discount.active = true
+                    this.discountForm = false
+                },
+                percentageDiscount(val) {
+                    this.discount.percentage = val / 100
+                },
+                deleteDiscount() {
+                    this.discount.active = false
+                    this.discount.percentage = 0
+                    this.discount.nominal = 0
+                },
+                addCost() {
+                    this.additional_costs.push({
+                        name: this.costForm.label,
+                        value: parseInt(this.costForm.nominal),
+                    })
+                    this.costForm = {
+                        isOpen : false,
+                        label : '',
+                        nominal: 0
+                    }
+                },
+                deleteCost(index) {
+                    this.additional_costs.splice(index, 1)
+                }
+            }
+        })
+
+    </script>
+</body>
+
+</html>

@@ -18,24 +18,13 @@
             </v-app-bar>
             <v-main>
                 <v-container fluid>
-                    <!-- <router-view></router-view> -->
-                    <!-- <v-row>
-                        <v-col>
-                            <v-btn elevation="2" color="primary" @click="addMember()">+ Member</v-btn>
-                        </v-col>
-                    </v-row> -->
 
-                    <v-card v-for="(member, member_index) in members" elevation="2" outlined elevation="2" outlined tile class="p4 mt-2">
+                    <v-card v-if="!showResult" v-for="(member, member_index) in members" elevation="2" outlined elevation="2" outlined tile class="p4 mt-2">
                         <v-card-title class="pb-0 d-flex justify-space-between">
                             <v-text-field class="mr-8" label="Member Name" :value="member.name" @input="updateMemberName($event, member_index)"></v-text-field>
-                            <!-- <div> -->
-                                <!-- <v-btn outlined color="indigo" small @click="addItemToMember(member_index)">
-                                    add item
-                                </v-btn> -->
-                                <v-btn icon color="red" @click="deleteMember(member_index)">
-                                    <v-icon>delete</v-icon>
-                                </v-btn>
-                            <!-- </div> -->
+                            <v-btn icon color="red" @click="deleteMember(member_index)">
+                                <v-icon>delete</v-icon>
+                            </v-btn>
                         </v-card-title>
                         <v-card-text class="pb-0">
                             <template v-for="(item, item_index) in member.items">
@@ -65,32 +54,17 @@
                                 </v-row>
                             </template>
                         </v-card-text>
-                        <!-- <v-divider v-if="item_index < member.items.length - 1"></v-divider> -->
+
                         <v-card-text class="pt-0">
                             <v-btn outlined color="indigo" small @click="addItemToMember(member_index)">
                                 add item
                             </v-btn>
-                            <!-- <v-row>
-                                <v-col cols="7 offset-1">
-                                    <div class="my-0 text-subtitle-2 black--text">
-                                        Total yang harus dibayar
-                                    </div>
-                                </v-col>
-                                <v-col cols="4">
-                                    <div class="my-0 text-subtitle-2 text-right black--text">
-                                        {{toIDR(getPaymentPerUser(member))}}
-                                    </div>
-                                </v-col>
-                            </v-row> -->
                         </v-card-text>
                     </v-card>
 
-                    <v-card v-for="(member, member_index) in members" elevation="2" outlined tile class="p4 mt-2">
+                    <v-card v-if="showResult" v-for="(member, member_index) in members" elevation="2" outlined tile class="p4 mt-2">
                         <v-card-title class="pb-1 d-flex justify-space-between">
                             <div>{{member.name}}</div>
-                            <v-btn icon color="indigo" small>
-                                <v-icon small>edit</v-icon>
-                            </v-btn>
                         </v-card-title>
                         <v-card-text>
                             <template v-for="(item, item_index) in member.items">
@@ -128,18 +102,12 @@
                         </v-card-text>
                     </v-card>
 
-                    <!-- <v-row class="my-1">
-                        <v-col class="d-flex justify-space-between">
-                            <v-btn elevation="2" color="primary">+ Biaya tambahan</v-btn>
-                            <v-btn elevation="2" color="primary">+ Diskon</v-btn>
-                        </v-col>
-                    </v-row> -->
                     <v-card elevation="2" outlined tile class="p4 mt-2 mb-12">
                         <v-card-text class="mb-2 mt-0 pt-0">
                             <v-row class="my-0">
-                                <v-col class="d-flex justify-space-between">
-                                    <v-btn outlined color="error" small @click="costForm.isOpen = !costForm.isOpen">+ Biaya tambahan</v-btn>
-                                    <v-btn outlined color="green" small :disabled="discount.active" @click="discountForm = !discountForm">+ Diskon</v-btn>
+                                <v-col class="d-flex justify-end">
+                                    <v-btn outlined color="error" class="mx-1" small @click="costForm.isOpen = !costForm.isOpen">+ Biaya tambahan</v-btn>
+                                    <v-btn outlined color="green" class="mx-1" small :disabled="discount.active" @click="discountForm = !discountForm">+ Diskon</v-btn>
                                 </v-col>
                             </v-row>
                             <v-divider></v-divider>
@@ -183,21 +151,13 @@
                                     {{toIDR(getTotalPayment())}}
                                 </v-col>
                             </v-row>
+                            <v-row>
+                                <v-col class="d-flex justify-end">
+                                    <v-btn outlined color="gray" class="mx-1" small @click="toogleShowResult()">{{showResult ? 'Back to Form' : 'View Result'}}</v-btn>
+                                    <v-btn outlined color="gray" class="mx-1" small :disabled="true">Share</v-btn>
+                                </v-col>
+                            </v-row>
                         </v-card-text>
-                        <!-- <v-card-actions class="d-flex justify-end">
-                            <v-btn
-                              color="deep-purple lighten-2"
-                              text
-                            >
-                              View Result
-                            </v-btn>
-                            <v-btn
-                              color="deep-purple lighten-2"
-                              text
-                            >
-                              Share
-                            </v-btn>
-                          </v-card-actions> -->
                     </v-card>
                   
                     <v-bottom-sheet v-model="costForm.isOpen">
@@ -288,6 +248,7 @@
                 }
             }),
             data: () => ({
+                showResult: false,
                 discountForm: false,
                 discountTypes: ['nominal', 'percentage'],
                 costForm: {
@@ -310,8 +271,8 @@
                 discount: {
                     active: false,
                     type: 'nominal',
-                    percentage: 0.1,
-                    nominal: 74000
+                    percentage: 0,
+                    nominal: 0
                     // nominal: 1000
                 },
                 additional_costs: [
@@ -337,7 +298,37 @@
                     v => /.+@.+/.test(v) || 'E-mail must be valid',
                 ],
             }),
+            mounted: function() {
+                let _members = this.getFromLocalStorage('members')
+                if (_members != null) this.members = _members
+
+                let _additional_costs = this.getFromLocalStorage('additional_costs')
+                if (_additional_costs != null) this.additional_costs = _additional_costs
+
+                let _discount = this.getFromLocalStorage('discount')
+                if (_discount != null) this.discount = _discount
+            },
             methods: {
+                saveToLocalStorage(key, value, isPlain = false) {
+                    let str = isPlain ? value : JSON.stringify(value)  
+                    localStorage.setItem(key, str)
+                },
+                getFromLocalStorage(key, isPlain = false) {
+                    str = localStorage.getItem(key)
+                    return !isPlain ? JSON.parse(str) : str
+                },
+                syncMembers() {
+                    this.saveToLocalStorage('members', this.members)
+                },
+                syncDiscount() {
+                    this.saveToLocalStorage('discount', this.discount)
+                },
+                syncAdditionalCosts() {
+                    this.saveToLocalStorage('additional_costs', this.additional_costs)
+                },
+                toogleShowResult() {
+                    this.showResult = !this.showResult
+                },
                 toIDR(value) {
                     return Intl.NumberFormat('id', {
                         style: 'currency',
@@ -389,9 +380,12 @@
                 },
                 updateMemberName(val, memberIndex) {
                     this.members[memberIndex].name = val
+                    this.syncMembers()
+                    
                 },
                 updateItemProps(val, memberIndex, itemIndex, obj) {
                     this.members[memberIndex].items[itemIndex][obj] = val
+                    this.syncMembers()
                 },
                 addMember() {
                     this.members.push({
@@ -400,31 +394,38 @@
 
                         ]
                     })
+                    this.syncMembers()
                 },
                 deleteMember(index) {
                     this.members.splice(index, 1)
+                    this.syncMembers()
                 },
                 addItemToMember(index) {
                     this.members[index].items.push({
                         name: '',
-                        qty: 0,
+                        qty: 1,
                         price: 0
                     })
+                    this.syncMembers()
                 },
                 deleteItemFromMember(memberIndex, itemIndex) {
                     this.members[memberIndex].items.splice(itemIndex, 1)
+                    this.syncMembers()
                 },
                 saveDiscount() {
                     this.discount.active = true
                     this.discountForm = false
+                    this.syncDiscount()
                 },
                 percentageDiscount(val) {
                     this.discount.percentage = val / 100
+                    this.syncDiscount()
                 },
                 deleteDiscount() {
                     this.discount.active = false
                     this.discount.percentage = 0
                     this.discount.nominal = 0
+                    this.syncDiscount()
                 },
                 addCost() {
                     this.additional_costs.push({
@@ -436,9 +437,11 @@
                         label : '',
                         nominal: 0
                     }
+                    this.syncAdditionalCosts()
                 },
                 deleteCost(index) {
                     this.additional_costs.splice(index, 1)
+                    this.syncAdditionalCosts()
                 }
             }
         })

@@ -154,7 +154,7 @@
                             <v-row>
                                 <v-col class="d-flex justify-end">
                                     <v-btn outlined color="gray" class="mx-1" small @click="toogleShowResult()">{{showResult ? 'Back to Form' : 'View Result'}}</v-btn>
-                                    <v-btn outlined color="gray" class="mx-1" small :disabled="true">Share</v-btn>
+                                    <v-btn outlined color="gray" class="mx-1" small :disabled="false" @click="copyResultToClipboard()">Share</v-btn>
                                 </v-col>
                             </v-row>
                         </v-card-text>
@@ -328,6 +328,47 @@
                 },
                 toogleShowResult() {
                     this.showResult = !this.showResult
+                },
+                generateResultText() {
+                    let str = ""
+                    let i = 0
+                    let _divider_ = '----------------------\r'
+                    for (member of this.members) {
+                        str += `# ${member.name}\r`
+                        for (item of member.items) {
+                            str += `- ${item.name} @${this.toIDR(item.price)} x${item.qty} ${this.toIDR(item.price * item.qty)}\r`
+                        }
+                        str += `Nominal Bayar : ${this.toIDR(this.getPaymentPerUser(member))}\r`
+                        str += _divider_
+                    }
+                    str += `Total Harga: ${this.toIDR(this.getTotalPrice())}\r`
+
+                    if (this.additional_costs.length > 0) {
+                        for (cost of this.additional_costs) {
+                            str += `${cost.name} : ${this.toIDR(cost.value)}\r`
+                        }
+                    }
+
+                    if (this.discount.active) {
+                        str += `Diskon : ${this.toIDR(this.getDiscount() * -1)}\r`
+                    }
+
+                    str += `Total Bayar: ${this.toIDR(this.getTotalPayment())}\r`
+                    str += _divider_
+                    str += `https://agusbarizi.github.io/kalkulator-patungan`
+
+                    console.log(str)
+
+                    return str
+                },
+                async copyResultToClipboard() {
+                    try {
+                        await navigator.clipboard.writeText(this.generateResultText());
+                        alert('Well done! the result has been copy to your clipboard');
+                    } catch($e) {
+                        console.log($e)
+                        alert('Cannot copy');
+                    }
                 },
                 toIDR(value) {
                     return Intl.NumberFormat('id', {
